@@ -1,12 +1,20 @@
 import axios, { AxiosResponse } from "axios";
-import { useQuery } from "react-query";
+import { useQueries, useQuery, UseQueryResult } from "react-query";
 
 import { PokemonResponse } from "../types";
 
 const pokemonApi = (id?: string) =>
 	axios.get(`https://pokeapi.co/api/v2/pokemon/${id || ""}`, { params: { limit: 151 } });
 
-const usePokemon = (id?: string) =>
-	useQuery<AxiosResponse<PokemonResponse>, Error>(id ? ["pokemon", id] : "pokemon", () => pokemonApi(id));
+const usePokemon = <T>(id?: string): UseQueryResult<AxiosResponse<T>, Error> =>
+	useQuery<AxiosResponse<T>, Error>(id ? ["pokemon", id] : "pokemon", () => pokemonApi(id));
+
+export const usePokemonQueries = (name: string[]): Array<UseQueryResult<AxiosResponse<PokemonResponse>, Error>> => {
+	const queries = name.map((name, idx) => ({
+		queryKey: ["evolution", `${name}_${idx}`],
+		quertFn: () => pokemonApi(name),
+	}));
+	return useQueries(queries) as Array<UseQueryResult<AxiosResponse<PokemonResponse>, Error>>;
+};
 
 export default usePokemon;
