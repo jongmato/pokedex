@@ -3,6 +3,7 @@ import styled from "@emotion/styled/macro";
 import usePokemon from "../hooks/usePokemon";
 import { ListResponse } from "../types";
 import { formatNumbering } from "../utils";
+import { Link } from "react-router-dom";
 
 const Base = styled.div`
 	margin-top: 24px;
@@ -72,11 +73,13 @@ const PokemonList: React.FC = () => {
 			) : (
 				<List>
 					{data?.data.results.map((pokemon, idx) => (
-						<ListItem key={pokemon.name}>
-							<Image src={getImageUrl(idx + 1)} alt={pokemon.name} />
-							<Name>{pokemon.name}</Name>
-							<Index>{formatNumbering(idx + 1)}</Index>
-						</ListItem>
+						<Link to={`/${idx + 1}`} key={pokemon.name}>
+							<ListItem>
+								<Image src={getImageUrl(idx + 1)} alt={pokemon.name} />
+								<Name>{pokemon.name}</Name>
+								<Index>{formatNumbering(idx + 1)}</Index>
+							</ListItem>
+						</Link>
 					))}
 				</List>
 			)}

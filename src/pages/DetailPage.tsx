@@ -7,6 +7,7 @@ import Stats from "../components/Stats";
 import Tabs from "../components/Tabs";
 import usePokemon from "../hooks/usePokemon";
 import useSpecies from "../hooks/useSpecies";
+import { PokemonResponse } from "../types";
 
 type Params = {
 	id: string;
@@ -17,7 +18,7 @@ type Tab = "about" | "stats" | "evolution";
 const DetailPage: React.FC = () => {
 	const { id } = useParams<Params>();
 	const [selectedTab, setSelectedTab] = useState<Tab>("about");
-	const pokemonResult = usePokemon(id);
+	const pokemonResult = usePokemon<PokemonResponse>(id);
 	const speciesResult = useSpecies(id as string);
 	const { name, types, height, weight, abilities, baseExp, stats } = useMemo(
 		() => ({
@@ -56,6 +57,7 @@ const DetailPage: React.FC = () => {
 				<About
 					isLoading={pokemonResult.isLoading || speciesResult.isLoading}
 					color={color}
+					flavorText={flavorText}
 					genderRate={genderRate}
 					growthRate={growthRate}
 					isLegendary={isLegendary}
@@ -70,14 +72,7 @@ const DetailPage: React.FC = () => {
 			{selectedTab === "stats" && (
 				<Stats isLoading={pokemonResult.isLoading || speciesResult.isLoading} color={color} stats={stats} />
 			)}
-			{selectedTab === "evolution" && (
-				<Evolution
-					isLoading={pokemonResult.isLoading || speciesResult.isLoading}
-					id={id}
-					color={color}
-					url={evolutionChainUrl}
-				/>
-			)}
+			{selectedTab === "evolution" && <Evolution id={id} color={color} url={evolutionChainUrl} />}
 		</div>
 	);
 };
