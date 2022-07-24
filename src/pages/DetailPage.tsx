@@ -1,6 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
+import About from "../components/About";
+import Evolution from "../components/Evolution";
+import PokemonInfo from "../components/PokemonInfo";
+import Stats from "../components/Stats";
 import Tabs from "../components/Tabs";
+import usePokemon from "../hooks/usePokemon";
+import useSpecies from "../hooks/useSpecies";
 
 type Params = {
 	id: string;
@@ -11,6 +17,32 @@ type Tab = "about" | "stats" | "evolution";
 const DetailPage: React.FC = () => {
 	const { id } = useParams<Params>();
 	const [selectedTab, setSelectedTab] = useState<Tab>("about");
+	const pokemonResult = usePokemon(id);
+	const speciesResult = useSpecies(id as string);
+	const { name, types, height, weight, abilities, baseExp, stats } = useMemo(
+		() => ({
+			name: pokemonResult.data?.data.name,
+			types: pokemonResult.data?.data.types,
+			height: pokemonResult.data?.data.height,
+			weight: pokemonResult.data?.data.weight,
+			abilities: pokemonResult.data?.data.abilities,
+			baseExp: pokemonResult.data?.data.base_experience,
+			stats: pokemonResult.data?.data.stats,
+		}),
+		[pokemonResult],
+	);
+	const { color, genderRate, flavorText, growthRate, isLegendary, isMythical, evolutionChainUrl } = useMemo(
+		() => ({
+			color: speciesResult.data?.data.color,
+			growthRate: speciesResult.data?.data.growth_rate.name,
+			flavorText: speciesResult.data?.data.flavor_text_entries[0].flavor_text,
+			genderRate: speciesResult.data?.data.gender_rate,
+			isLegendary: speciesResult.data?.data.is_legendary,
+			isMythical: speciesResult.data?.data.is_mythical,
+			evolutionChainUrl: speciesResult.data?.data.evolution_chain.url,
+		}),
+		[speciesResult],
+	);
 
 	const handleClick = (tab: Tab) => {
 		setSelectedTab(tab);
@@ -18,7 +50,34 @@ const DetailPage: React.FC = () => {
 
 	return (
 		<div>
-			<Tabs tab={selectedTab} onClick={handleClick} />
+			<PokemonInfo id={id as string} name={name} types={types} color={color} />
+			<Tabs tab={selectedTab} onClick={handleClick} color={{ name: "red", url: "" }} />
+			{selectedTab === "about" && (
+				<About
+					isLoading={pokemonResult.isLoading || speciesResult.isLoading}
+					color={color}
+					genderRate={genderRate}
+					growthRate={growthRate}
+					isLegendary={isLegendary}
+					isMythical={isMythical}
+					types={types}
+					weight={weight}
+					height={height}
+					baseExp={baseExp}
+					abilities={abilities}
+				/>
+			)}
+			{selectedTab === "stats" && (
+				<Stats isLoading={pokemonResult.isLoading || speciesResult.isLoading} color={color} stats={stats} />
+			)}
+			{selectedTab === "evolution" && (
+				<Evolution
+					isLoading={pokemonResult.isLoading || speciesResult.isLoading}
+					id={id}
+					color={color}
+					url={evolutionChainUrl}
+				/>
+			)}
 		</div>
 	);
 };
